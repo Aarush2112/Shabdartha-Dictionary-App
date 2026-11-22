@@ -134,11 +134,10 @@ class _SearchScreenState extends State<SearchScreen> {
         title: Padding(
           padding: const EdgeInsets.only(right: 16.0),
           child: Container(
-            height: 44,
+            height: 48,
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.border),
+              color: const Color(0xFFF2F2F5),
+              borderRadius: BorderRadius.circular(24),
             ),
             child: TextField(
               controller: _controller,
@@ -146,14 +145,14 @@ class _SearchScreenState extends State<SearchScreen> {
               autofocus: true,
               textInputAction: TextInputAction.search,
               onSubmitted: _openWord,
-              style: AppTypography.sansBody(fontSize: 15),
+              style: const TextStyle(fontSize: 15, color: Colors.black, fontWeight: FontWeight.w500),
               decoration: InputDecoration(
-                hintText: 'Search word, root, or phrase...',
-                hintStyle: AppTypography.sansBody(fontSize: 14, color: AppColors.warmGray),
-                prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.warmGray),
+                hintText: 'Search exhibition, word, or root...',
+                hintStyle: const TextStyle(fontSize: 14, color: Color(0xFF8E8E93)),
+                prefixIcon: const Icon(Icons.search_rounded, size: 20, color: Color(0xFF8E8E93)),
                 suffixIcon: hasQuery
                     ? IconButton(
-                        icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.warmGray),
+                        icon: const Icon(Icons.close_rounded, size: 18, color: Color(0xFF8E8E93)),
                         onPressed: () {
                           _controller.clear();
                         },
@@ -162,7 +161,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),

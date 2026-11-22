@@ -6,6 +6,7 @@ import '../../../models/word_model.dart';
 import '../../../services/audio_service.dart';
 import '../../../services/dictionary_service.dart';
 import '../../../services/storage_service.dart';
+import '../../../widgets/story_overlay_screen.dart';
 import '../../search/screens/search_screen.dart';
 import '../../word_details/screens/word_details_screen.dart';
 import '../../word_details/widgets/audio_pronunciation_button.dart';
@@ -34,7 +35,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late WordEntry _wordOfTheDay;
   bool _isWotdSaved = false;
-  List<String> _recentSearches = [];
+
+  final String _artworkFresco = 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=600';
+  final String _artworkFloral = 'https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=600';
+  final String _artworkColonnade = 'https://images.unsplash.com/photo-1582561424760-0321d75e81fa?w=800';
+  final String _avatarUrl = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200';
 
   @override
   void initState() {
@@ -45,7 +50,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void _loadState() {
     _wordOfTheDay = widget.dictionaryService.getWordOfTheDay();
     _isWotdSaved = widget.storageService.isWordSaved(_wordOfTheDay.word);
-    _recentSearches = widget.storageService.getRecentSearches();
     setState(() {});
   }
 
@@ -56,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Removed "${_wordOfTheDay.word}" from bookmarks.'),
+            content: Text('Removed "${_wordOfTheDay.word}" from saved collection.'),
             backgroundColor: AppColors.obsidian,
             duration: const Duration(seconds: 1),
           ),
@@ -68,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Saved "${_wordOfTheDay.word}" to bookmarks.'),
+            content: Text('Saved "${_wordOfTheDay.word}" to vocabulary library.'),
             backgroundColor: AppColors.sageGreen,
             duration: const Duration(seconds: 1),
           ),
@@ -77,17 +81,29 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _openWord(String word) {
-    widget.storageService.addRecentSearch(word);
+  void _openWord(WordEntry entry) {
+    widget.storageService.addRecentSearch(entry.word);
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => WordDetailsScreen(
-          wordQuery: word,
+          initialEntry: entry,
           dictionaryService: widget.dictionaryService,
           storageService: widget.storageService,
           audioService: widget.audioService,
           onAskAi: widget.onAskAi,
-          onSelectWord: (w) => _openWord(w),
+          onSelectWord: (w) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => WordDetailsScreen(
+                  wordQuery: w,
+                  dictionaryService: widget.dictionaryService,
+                  storageService: widget.storageService,
+                  audioService: widget.audioService,
+                  onAskAi: widget.onAskAi,
+                ),
+              ),
+            );
+          },
         ),
       ),
     ).then((_) => _loadState());
@@ -122,28 +138,44 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _openStoryMode() {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, anim, _) => StoryOverlayScreen(
+          onOpenWord: (entry) => _openWord(entry),
+        ),
+        transitionsBuilder: (context, anim, _, child) => FadeTransition(opacity: anim, child: child),
+      ),
+    );
+  }
+
+  String _getTimeGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning,';
+    if (hour < 17) return 'Good Afternoon,';
+    return 'Good Evening,';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.parchment,
+      backgroundColor: Colors.white,
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
-          color: AppColors.terracotta,
-          onRefresh: () async {
-            _loadState();
-          },
+          color: AppColors.obsidian,
+          onRefresh: () async => _loadState(),
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 100.0),
+            padding: const EdgeInsets.fromLTRB(20.0, 14.0, 20.0, 110.0),
             children: [
-              // 1. Classical Museum Masthead
-              _buildMasthead(),
+              // 1. Top Bar (Exact layout: Grid Button, Location/Edition, Avatar)
+              _buildTopBar(),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-              // 2. Editorial Serif Headline
+              // 2. High-Contrast Bold Serif Headline ("Good Morning, Brooklyn...")
               Text(
-                'Curating the World\nof Words...',
+                '${_getTimeGreeting()}\nScholar...',
                 style: AppTypography.editorialHeadline(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
@@ -152,37 +184,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
 
-              // 3. Capsule Search Field
-              _buildCapsuleSearchBar(),
-
-              const SizedBox(height: 24),
-
-              // 4. Circular Category Avatars (from reference image)
-              _buildCircularCategoryRow(),
+              // 3. Pill Search Field ("Search exhibition, event, or artwork...")
+              _buildPillSearchBar(),
 
               const SizedBox(height: 28),
 
-              // 5. Featured Masterpiece Folio (Word of the Day)
-              _buildIlluminatedMasterpieceCard(),
+              // 4. Circular Category Icons Row ("Exhibition", "Event", "Artwork", "Artist")
+              _buildCircularCategoriesRow(),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 32),
 
-              // 6. Curated Exhibitions & Folios Grid
-              _buildCuratedFoliosSection(),
+              // 5. Exhibition Section Header + 2-Column Cards
+              _buildExhibitionSection(),
+
+              const SizedBox(height: 32),
+
+              // 6. Masterpiece of the Day (Screen 3 inspired Cathedral Arch frame)
+              _buildMasterpieceCard(),
 
               const SizedBox(height: 24),
-
-              // 7. "Ask Garuda" Literary Salon Entry
-              _buildAskGarudaSalonCard(),
-
-              const SizedBox(height: 24),
-
-              // 8. Recent Searches Chips
-              _buildRecentSearchesSection(),
-
-              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -190,82 +212,82 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildMasthead() {
+  Widget _buildTopBar() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
+        // Left: Black circular grid button
+        InkWell(
+          onTap: _openStoryMode,
+          borderRadius: BorderRadius.circular(22),
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+              color: Colors.black,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.grid_view_rounded,
+              size: 20,
+              color: Colors.white,
+            ),
+          ),
+        ),
+
+        // Center: Location / Edition metadata
+        Column(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.obsidian,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.grid_view_rounded,
-                size: 18,
-                color: AppColors.parchment,
+            Text(
+              'Curated Lexicon',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+                color: AppColors.warmGray,
               ),
             ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 2),
+            Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: AppColors.antiqueGold,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'GARUDA PRAKASHAN × RISHIHOOD',
-                      style: AppTypography.sansLabel(
-                        fontSize: 10,
-                        color: AppColors.warmGray,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                  ],
+                Container(
+                  width: 5,
+                  height: 5,
+                  decoration: const BoxDecoration(
+                    color: AppColors.sageGreen,
+                    shape: BoxShape.circle,
+                  ),
                 ),
-                Text(
-                  'Garuda Lexicon • Edition I',
-                  style: AppTypography.sansBody(
+                const SizedBox(width: 5),
+                const Text(
+                  'Garuda × Rishihood',
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.deepInk,
+                    color: Colors.black,
                   ),
                 ),
               ],
             ),
           ],
         ),
+
+        // Right: Circular portrait avatar
         Container(
-          width: 38,
-          height: 38,
+          width: 42,
+          height: 42,
           decoration: BoxDecoration(
-            color: AppColors.surfaceSand,
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.border, width: 1.5),
           ),
-          child: const Center(
-            child: Icon(
-              Icons.auto_stories_rounded,
-              size: 18,
-              color: AppColors.terracotta,
+          child: ClipOval(
+            child: Image.network(
+              _avatarUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: const Color(0xFFF2F2F5),
+                child: const Icon(Icons.person_rounded, size: 22, color: Colors.black54),
+              ),
             ),
           ),
         ),
@@ -273,50 +295,32 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCapsuleSearchBar() {
+  Widget _buildPillSearchBar() {
     return InkWell(
       onTap: _openSearch,
       borderRadius: BorderRadius.circular(28),
       child: Container(
-        height: 52,
+        height: 50,
         padding: const EdgeInsets.symmetric(horizontal: 18),
         decoration: BoxDecoration(
-          color: AppColors.surfaceSand,
+          color: const Color(0xFFF2F2F5),
           borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: AppColors.borderSubtle),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
         ),
         child: Row(
           children: [
-            const Icon(Icons.search_rounded, size: 20, color: AppColors.warmGray),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Search word, root, or phrase...',
-                style: AppTypography.sansBody(
-                  fontSize: 14,
-                  color: AppColors.warmGray,
-                ),
-              ),
+            const Icon(
+              Icons.search_rounded,
+              size: 20,
+              color: Color(0xFF8E8E93),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.obsidian,
-                borderRadius: BorderRadius.circular(20),
-              ),
+            const SizedBox(width: 12),
+            const Expanded(
               child: Text(
-                'LOOKUP',
-                style: AppTypography.sansLabel(
-                  fontSize: 9.5,
-                  color: AppColors.parchment,
-                  letterSpacing: 0.8,
+                'Search words, roots, or Ask Garuda...',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF8E8E93),
                 ),
               ),
             ),
@@ -326,10 +330,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCircularCategoryRow() {
+  Widget _buildCircularCategoriesRow() {
     final categories = [
       {'title': 'Indic Roots', 'icon': Icons.temple_hindu_outlined, 'index': 0},
-      {'title': 'PIE Cognates', 'icon': Icons.account_tree_outlined, 'index': 1},
+      {'title': 'Cognates', 'icon': Icons.account_tree_outlined, 'index': 1},
       {'title': 'Emotions', 'icon': Icons.favorite_border_rounded, 'index': 2},
       {'title': 'Rhetoric', 'icon': Icons.menu_book_outlined, 'index': 3},
       {'title': 'Confused', 'icon': Icons.compare_arrows_rounded, 'index': 4},
@@ -345,39 +349,32 @@ class _HomeScreenState extends State<HomeScreen> {
           final idx = cat['index'] as int;
 
           return Padding(
-            padding: const EdgeInsets.only(right: 18.0),
+            padding: const EdgeInsets.only(right: 20.0),
             child: InkWell(
               onTap: () => _openCollection(idx),
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(28),
               child: Column(
                 children: [
                   Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      color: AppColors.obsidian,
+                    width: 52,
+                    height: 52,
+                    decoration: const BoxDecoration(
+                      color: Colors.black,
                       shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.12),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
                     ),
                     child: Icon(
                       icon,
                       size: 22,
-                      color: AppColors.parchment,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     title,
-                    style: AppTypography.sansLabel(
-                      fontSize: 11,
+                    style: const TextStyle(
+                      fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.deepInk,
+                      color: Colors.black,
                     ),
                   ),
                 ],
@@ -389,90 +386,223 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildIlluminatedMasterpieceCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
+  Widget _buildExhibitionSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Exhibition',
+              style: AppTypography.serifHeading(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: Colors.black,
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                if (widget.onNavigateToTab != null) {
+                  widget.onNavigateToTab!(1); // Go to Explore
+                }
+              },
+              child: const Text(
+                'See all',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF8E8E93),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // 2-Column Cards (Exact match to "Michael Angelo's" and "Flower Poetry #1")
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Card 1: Words of Indian Origin
+            Expanded(
+              child: _buildExhibitionCard(
+                imageUrl: _artworkFresco,
+                title: 'Words of Indian Origin',
+                subtitle: '10 Terms • Sanskrit & Odia',
+                onTap: () => _openCollection(0),
+              ),
+            ),
+            const SizedBox(width: 14),
+            // Card 2: Ancient PIE Cognates
+            Expanded(
+              child: _buildExhibitionCard(
+                imageUrl: _artworkFloral,
+                title: 'Ancient PIE Cognates',
+                subtitle: '6 Terms • Shared Roots',
+                onTap: () => _openCollection(1),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExhibitionCard({
+    required String imageUrl,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: AspectRatio(
+              aspectRatio: 0.85,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: const Color(0xFFEBEBF0),
+                  child: const Center(
+                    child: Icon(Icons.palette_outlined, size: 28, color: Color(0xFF8E8E93)),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.serifHeading(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF8E8E93),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMasterpieceCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9F9FB),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFEEEEF2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cathedral Arch Styled Header Plate
-          Container(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-            decoration: BoxDecoration(
-              color: AppColors.obsidian,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(23),
-                topRight: Radius.circular(23),
-              ),
+          // Arched image frame (Cathedral arch matching Screen 3)
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: AppColors.antiqueGoldLight,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'MASTERPIECE OF THE DAY',
-                      style: AppTypography.sansLabel(
-                        fontSize: 10.5,
-                        color: AppColors.antiqueGoldLight,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  icon: Icon(
-                    _isWotdSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                    color: _isWotdSaved ? AppColors.antiqueGoldLight : Colors.white.withValues(alpha: 0.6),
-                    size: 20,
+            child: SizedBox(
+              height: 180,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.network(
+                    _artworkColonnade,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(color: Colors.black12),
                   ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  tooltip: 'Bookmark',
-                  onPressed: _toggleWotdSave,
-                ),
-              ],
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.65),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 14,
+                    right: 14,
+                    child: InkWell(
+                      onTap: _toggleWotdSave,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _isWotdSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                          size: 18,
+                          color: _isWotdSaved ? AppColors.antiqueGoldLight : Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 18,
+                    bottom: 14,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Text(
+                        'MASTERPIECE OF THE DAY',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
           Padding(
-            padding: const EdgeInsets.all(22.0),
+            padding: const EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Word and Audio Pill Row
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Expanded(
-                      child: Text(
-                        _wordOfTheDay.word,
-                        style: AppTypography.editorialHeadline(
-                          fontSize: 34,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.deepInk,
-                        ),
+                    Text(
+                      _wordOfTheDay.word,
+                      style: AppTypography.editorialHeadline(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
                       ),
                     ),
                     if (_wordOfTheDay.audioUrl != null)
@@ -487,133 +617,57 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 2),
                   Text(
                     _wordOfTheDay.phonetic!,
-                    style: AppTypography.phonetic(fontSize: 14),
+                    style: AppTypography.phonetic(fontSize: 13),
                   ),
                 ],
 
-                const SizedBox(height: 14),
-
-                // Part of Speech & Indic Tag
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 6,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceSand,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        _wordOfTheDay.primaryPartOfSpeech.toUpperCase(),
-                        style: AppTypography.sansLabel(
-                          fontSize: 10,
-                          color: AppColors.deepInk,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
+                if (_wordOfTheDay.indianConnections.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    '${_wordOfTheDay.indianConnections.first.language}: ${_wordOfTheDay.indianConnections.first.nativeScript} (${_wordOfTheDay.indianConnections.first.relationType.label})',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.sageGreen,
                     ),
-                    if (_wordOfTheDay.indianConnections.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: AppColors.sageGreenSurface,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: AppColors.sageGreenBorder),
-                        ),
-                        child: Text(
-                          '${_wordOfTheDay.indianConnections.first.language}: ${_wordOfTheDay.indianConnections.first.nativeScript} (${_wordOfTheDay.indianConnections.first.relationType.label})',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.sageGreen,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                  ),
+                ],
 
-                const SizedBox(height: 14),
-
-                // Definition
+                const SizedBox(height: 10),
                 Text(
                   _wordOfTheDay.primaryDefinition,
-                  style: AppTypography.sansBody(
-                    fontSize: 15,
-                    color: AppColors.deepInk,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF3C3C43),
                     height: 1.45,
                   ),
                 ),
 
-                // Editorial Insight Quote Box
-                if (_wordOfTheDay.editorialInsight != null && _wordOfTheDay.editorialInsight!.isNotEmpty) ...[
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceSand.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(10),
-                      border: const Border(
-                        left: BorderSide(color: AppColors.terracotta, width: 3),
-                      ),
-                    ),
-                    child: Text(
-                      '“${_wordOfTheDay.editorialInsight!}”',
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 13,
-                        color: AppColors.inkLight.withValues(alpha: 0.9),
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
-
                 const SizedBox(height: 18),
-                const Divider(height: 1),
-                const SizedBox(height: 14),
 
-                // Pill Action: Examine Folio ->
+                // Pill Action Button: Details ->
                 InkWell(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => WordDetailsScreen(
-                          initialEntry: _wordOfTheDay,
-                          dictionaryService: widget.dictionaryService,
-                          storageService: widget.storageService,
-                          audioService: widget.audioService,
-                          onAskAi: widget.onAskAi,
-                          onSelectWord: (w) => _openWord(w),
-                        ),
-                      ),
-                    ).then((_) => _loadState());
-                  },
-                  borderRadius: BorderRadius.circular(20),
+                  onTap: () => _openWord(_wordOfTheDay),
+                  borderRadius: BorderRadius.circular(22),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceSand,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.border),
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(22),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Examine Folio',
-                          style: AppTypography.sansBody(
+                          'Details',
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.deepInk,
+                            color: Colors.white,
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        const Icon(
-                          Icons.arrow_forward_rounded,
-                          size: 15,
-                          color: AppColors.terracotta,
-                        ),
+                        SizedBox(width: 6),
+                        Icon(Icons.arrow_forward_rounded, size: 14, color: Colors.white),
                       ],
                     ),
                   ),
@@ -623,300 +677,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCuratedFoliosSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'CURATED FOLIOS',
-              style: AppTypography.sansLabel(
-                fontSize: 11,
-                color: AppColors.warmGray,
-                letterSpacing: 1.0,
-              ),
-            ),
-            InkWell(
-              onTap: () {
-                if (widget.onNavigateToTab != null) {
-                  widget.onNavigateToTab!(1); // Go to Explore
-                }
-              },
-              child: Row(
-                children: [
-                  Text(
-                    'See all',
-                    style: AppTypography.sansBody(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.terracotta,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.arrow_forward_rounded, size: 13, color: AppColors.terracotta),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-
-        // 2-Column Aesthetic Cards
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: 4,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 14,
-            mainAxisSpacing: 14,
-            childAspectRatio: 0.88,
-          ),
-          itemBuilder: (context, index) {
-            final col = curatedCollections[index];
-            final gradients = [
-              AppColors.folioTerracotta,
-              AppColors.folioIndigo,
-              AppColors.folioEmerald,
-              AppColors.folioBronze,
-            ];
-
-            return InkWell(
-              onTap: () => _openCollection(index),
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: gradients[index % gradients.length],
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            col.icon,
-                            size: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          '${col.wordList.length} words',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white.withValues(alpha: 0.6),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          col.tag.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.antiqueGoldLight,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          col.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTypography.serifHeading(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            height: 1.2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAskGarudaSalonCard() {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: AppColors.obsidian,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: AppColors.terracotta,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.auto_awesome_rounded,
-                  size: 16,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Ask Garuda',
-                    style: AppTypography.serifHeading(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    'The Literary Salon',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.white.withValues(alpha: 0.5),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Text(
-            '“Words are only the beginning.”',
-            style: AppTypography.editorialHeadline(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: AppColors.parchment,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Inquire about semantic nuance, explore authentic Sanskrit and Hindi cognates, or refine your prose cadence with your dedicated language mentor.',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.white.withValues(alpha: 0.7),
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 16),
-          InkWell(
-            onTap: () {
-              if (widget.onNavigateToTab != null) {
-                widget.onNavigateToTab!(3); // Go to Ask Garuda
-              }
-            },
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Enter Salon',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  const Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 14,
-                    color: AppColors.terracottaLight,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecentSearchesSection() {
-    final list = _recentSearches.isNotEmpty
-        ? _recentSearches.take(6).toList()
-        : ['juggernaut', 'avatar', 'brother', 'petrichor', 'ineffable', 'solitude'];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          _recentSearches.isNotEmpty ? 'RECENTLY CONSULTED' : 'FEATURED INQUIRIES',
-          style: AppTypography.sansLabel(
-            fontSize: 11,
-            color: AppColors.warmGray,
-            letterSpacing: 1.0,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: list.map((word) {
-            return ActionChip(
-              backgroundColor: AppColors.surface,
-              side: const BorderSide(color: AppColors.border),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              label: Text(
-                word,
-                style: AppTypography.sansBody(fontSize: 12.5, color: AppColors.deepInk),
-              ),
-              onPressed: () => _openWord(word),
-            );
-          }).toList(),
-        ),
-      ],
     );
   }
 }
