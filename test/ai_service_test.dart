@@ -14,6 +14,11 @@ void main() {
       expect(demoService.providerName, contains('Demo Mode'));
     });
 
+    test('Verifies testConnection succeeds on Demo Service without throwing', () async {
+      final status = await demoService.testConnection();
+      expect(status, contains('operational'));
+    });
+
     test('Provides scholarly comparative analysis for near-synonyms', () async {
       final response = await demoService.sendMessage(
         prompt: 'What is the difference between melancholy, sadness, and grief?',

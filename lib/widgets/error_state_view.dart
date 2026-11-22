@@ -6,12 +6,18 @@ class ErrorStateView extends StatelessWidget {
   final String title;
   final String message;
   final VoidCallback? onRetry;
+  final String? retryLabel;
+  final String? secondaryActionTitle;
+  final VoidCallback? onSecondaryAction;
 
   const ErrorStateView({
     super.key,
     this.title = 'Lookup Unavailable',
     required this.message,
     this.onRetry,
+    this.retryLabel = 'Try Again',
+    this.secondaryActionTitle,
+    this.onSecondaryAction,
   });
 
   @override
@@ -51,24 +57,44 @@ class ErrorStateView extends StatelessWidget {
               style: AppTypography.sansBody(
                 fontSize: 14,
                 color: AppColors.warmGray,
+                height: 1.4,
               ),
             ),
-            if (onRetry != null) ...[
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded, size: 16),
-                label: const Text('Try Again'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.terracotta,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            const SizedBox(height: 20),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                if (onRetry != null)
+                  ElevatedButton.icon(
+                    onPressed: onRetry,
+                    icon: const Icon(Icons.refresh_rounded, size: 16),
+                    label: Text(retryLabel!),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.terracotta,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
                   ),
-                  elevation: 0,
-                ),
-              ),
-            ],
+                if (secondaryActionTitle != null && onSecondaryAction != null)
+                  OutlinedButton.icon(
+                    onPressed: onSecondaryAction,
+                    icon: const Icon(Icons.auto_awesome_rounded, size: 16),
+                    label: Text(secondaryActionTitle!),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.terracottaDark,
+                      side: const BorderSide(color: AppColors.terracottaBorder),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ],
         ),
       ),

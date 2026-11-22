@@ -372,6 +372,30 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
+            // Editorial Insight
+            if (_wordOfTheDay.editorialInsight != null && _wordOfTheDay.editorialInsight!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceSand.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(8),
+                  border: const Border(
+                    left: BorderSide(color: AppColors.terracotta, width: 3),
+                  ),
+                ),
+                child: Text(
+                  '“${_wordOfTheDay.editorialInsight!}”',
+                  style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 12.5,
+                    color: AppColors.inkLight.withValues(alpha: 0.9),
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+
             // Indian Linguistic Connection Callout (if present)
             if (_wordOfTheDay.indianConnections.isNotEmpty) ...[
               const SizedBox(height: 14),

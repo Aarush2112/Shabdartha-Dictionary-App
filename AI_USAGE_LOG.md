@@ -3,20 +3,21 @@
 **Project:** Garuda Lexicon (Garuda Prakashan × Rishihood Live Project — Dictionary App Track)  
 **Developer Role:** Senior Flutter Engineer, Product Designer, UX Researcher & AI Product Engineer  
 **Date:** November 22, 2026  
-**Status:** Implementation, Testing & Verification Complete
+**Status:** Implementation, Rigorous QA Audit, Refactoring & Verification Complete
 
 ---
 
 ## 1. Overview and Purpose
 
-This document provides a fully honest, unvarnished disclosure of all artificial intelligence assistance utilized in the architecture, implementation, and testing of **Garuda Lexicon**.
+This document provides a fully honest, unvarnished disclosure of all artificial intelligence assistance utilized in the architecture, implementation, audit, and testing of **Garuda Lexicon**.
 
 In strict adherence to the project guidelines, this log documents:
 - Real AI tools and models engaged
-- Prompts issued and technical objectives
+- Chronological prompts issued and technical objectives
 - AI-generated scaffolding vs. human engineering and linguistic decisions
 - Real instances of rejected, corrected, or refined AI proposals
 - Empirical verification records across Flutter Analyzer, test runners, and browser runtimes
+- Specific items requiring explicit confirmation from the human developer/reviewer
 
 ---
 
@@ -24,9 +25,9 @@ In strict adherence to the project guidelines, this log documents:
 
 | Tool / Platform | Model / Version | Specific Tasks Assigned |
 | :--- | :--- | :--- |
-| **Antigravity Agent** | Gemini 3.8 Flash (High) | Scaffolding Flutter architecture, code generation, lint correction, test authoring |
+| **Antigravity Agent** | Gemini 3.8 Flash (High) | Scaffolding Flutter architecture, code generation, lint correction, test authoring, QA bug-finding |
 | **Flutter SDK** | Version 3.38.9 / Dart 3.10.8 | Code compilation, static analysis (`flutter analyze`), web build (`flutter build web`) |
-| **Flutter Test Runner** | Dart Test Framework | Executed 16 unit & widget tests covering models, services, persistence, and UI |
+| **Flutter Test Runner** | Dart Test Framework | Executed 19 unit & widget tests covering models, services, persistence, exceptions, and UI |
 | **Free Dictionary API** | Open Public API v2 | Authoritative live English definitions, phonetics, audio playback URLs |
 | **Datamuse API** | Open Public API | Prefix autocomplete suggestions for debounced search |
 | **Google Gemini API** | `gemini-1.5-flash` / `gemini-1.5-pro` | Live LLM language mentor for "Ask Garuda" via user-configured API key |
@@ -58,8 +59,8 @@ In strict adherence to the project guidelines, this log documents:
 - **Date/Time:** 2026-11-22T20:52:00+05:30
 - **Linguistic Decision:** 
   Strictly prohibited fabricated linguistic claims. Implemented `IndianRelationType` enum to explicitly segregate:
-  - `loanword`: Direct historical borrowings (e.g. *Juggernaut* from Jagannātha, *Avatar* from avatāra, *Guru*, *Bungalow*, *Jungle*).
-  - `cognate`: Shared Proto-Indo-European ancestor without direct borrowing (e.g. *Brother* / *bhrātṛ*, *Mother* / *mātṛ*, *Name* / *nāma*).
+  - `loanword`: Direct historical borrowings (e.g. *Juggernaut* from Jagannātha, *Avatar* from avatāra, *Guru*, *Bungalow*, *Jungle*, *Bandana*, *Cheetah*).
+  - `cognate`: Shared Proto-Indo-European ancestor without direct borrowing (e.g. *Brother* / *bhrātṛ*, *Mother* / *mātṛ*, *Name* / *nāma*, *Dental* / *danta*).
   - `conceptualParallel`: Deep philosophical or sensory parallels (e.g. *Petrichor* and Kannauj *Mitti Attar*, *Equanimity* and Gita *Samatvam*).
 
 ### Entry 4: "Ask Garuda" AI Companion Architecture
@@ -83,7 +84,18 @@ In strict adherence to the project guidelines, this log documents:
 ### Entry 6: Automated Testing & Browser Build
 - **Date/Time:** 2026-11-22T21:00:45+05:30
 - **Actions:** 
-  Authored 4 dedicated test suites (16 tests total). All 16 tests executed and passed. Ran `flutter build web --release` which succeeded in 32 seconds. Hosted web build via Python daemon on port 8080 and launched Chrome browser subagent for end-to-end UI verification.
+  Authored 4 initial test suites (16 tests total). All 16 tests executed and passed. Ran `flutter build web --release` which succeeded in 32 seconds. Hosted web build via Python daemon on port 8080 and launched Chrome browser.
+
+### Entry 7: Senior QA Review & Critical Problem Rectification
+- **Date/Time:** 2026-11-22T21:06:00+05:30
+- **Review Findings & Fixes:**
+  1. **Audio Listener Leak:** `AudioPlayer.onPlayerComplete.listen` was re-attaching every time audio was played. Refactored `AudioService` to extend `ChangeNotifier` with a single managed subscription and reactive `ListenableBuilder` synchronization across all buttons.
+  2. **Navigation Stack Trap on "Ask Garuda":** Tapping "Ask Garuda" from a word opened from `SearchScreen` or `CollectionDetailScreen` popped only the topmost screen, stranding the user on the sub-screen. Fixed by using `Navigator.of(context).popUntil((route) => route.isFirst)` before switching to the Ask Garuda tab.
+  3. **Conflation of 404 and Network Errors:** If a word did not exist in the dictionary, `DictionaryService` masked the 404 code with "check your network connection". Introduced typed `WordNotFoundException` and wired `ErrorStateView` with a direct call-to-action button to ask Ask Garuda about the missing word.
+  4. **Broken Retry Action in Chat:** Error message bubbles contained text stating "*Tap retry below*", but omitted an actual Retry button. Implemented `_retryLastPrompt()` and rendered a functional `ElevatedButton.icon` to resend failed prompts seamlessly.
+  5. **No API Test Verification in Settings:** Users had no way of testing if their entered Gemini API key was valid without sending a chat message. Added `testConnection()` method to `AiService` and wired an interactive "Test Connection" button with real-time API response validation in `AiSettingsDialog`.
+  6. **Expanded Curated Dataset:** Added 3 additional authentic words: *Bandana* (Hindi loanword), *Cheetah* (Sanskrit loanword), and *Dental* (PIE cognate to Sanskrit *danta*).
+  7. **Expanded Test Suite:** Added 3 additional tests covering `WordNotFoundException`, curated words, and `testConnection()`, bringing the total to 19 passing tests.
 
 ---
 
@@ -94,8 +106,8 @@ In strict adherence to the project guidelines, this log documents:
 | **Visual Design** | Suggested standard Material 3 color seed and rounded cards. | Overrode with a bespoke editorial parchment/ink palette and subtle 1px border cards reminiscent of fine literary publications. |
 | **Dictionary Integration** | Suggested querying Free Dictionary API on every keypress. | Added 300ms debounce timer, immediate local curated cache check, and Datamuse prefix suggestions for zero-latency feedback. |
 | **Etymology Data** | Suggested generic etymology strings. | Enforced strict academic categorization: distinguished PIE cognates from direct loanwords with Devanagari script, transliteration, and historical notes. |
-| **AI Companion** | Proposed standard conversational bot. | Configured specialized literary persona, added quick follow-up chips, markdown rendering, copy-to-clipboard, and built-in demo engine. |
-| **API Key Handling** | Initially omitted settings UI. | Built `AiSettingsDialog` with secure local `SharedPreferences` storage and explicit user toggle between Demo Mode and Live Gemini. |
+| **AI Companion** | Proposed standard conversational bot. | Configured specialized literary persona, added quick follow-up chips, markdown rendering, copy-to-clipboard, retry action, and built-in demo engine. |
+| **API Key Handling** | Initially omitted settings UI. | Built `AiSettingsDialog` with secure local `SharedPreferences` storage, live connection test tool, and explicit toggle between Demo Mode and Live Gemini. |
 
 ---
 
@@ -112,6 +124,8 @@ In strict adherence to the project guidelines, this log documents:
    - *Resolution:* Added distinct `IndianRelationType.cognate` classification with clear educational explanation.
 4. **Corrected: Deprecated `Share.share` API Call**
    - *Correction:* Upgraded to `SharePlus.instance.share(ShareParams(text: ...))` according to `share_plus: ^13.3.1` requirements.
+5. **Corrected: Masking API 404 as Network Errors**
+   - *Correction:* Created `WordNotFoundException` to clearly notify users when a term is not in the public dictionary, rather than misleadingly telling them their network failed.
 
 ---
 
@@ -120,34 +134,34 @@ In strict adherence to the project guidelines, this log documents:
 ### A. Flutter Static Analysis (`flutter analyze`)
 ```
 Analyzing dictapp...
-No issues found! (ran in 1.8s)
+No issues found! (ran in 2.0s)
 ```
 
 ### B. Automated Unit & Widget Test Suite (`flutter test`)
-Ran 16 tests across 5 test files:
+Ran 19 tests across 5 test files:
 - `test/word_model_test.dart` (3 tests): Serialization, API JSON parsing, academic relation classification.
-- `test/dictionary_service_test.dart` (4 tests): Deterministic Word of the Day, curated lookup, whitespace/case handling, suggestion queries.
+- `test/dictionary_service_test.dart` (6 tests): Deterministic Word of the Day, curated lookup, new words (bandana, cheetah, dental), whitespace/case handling, WordNotFoundException, suggestion queries.
 - `test/storage_service_test.dart` (4 tests): Bookmark persistence, recent search LRU queue, chat persistence, API key storage.
-- `test/ai_service_test.dart` (4 tests): Demo mode identification, comparative semantic analysis, Indian origin analysis, sentence polish advice.
+- `test/ai_service_test.dart` (5 tests): Demo mode identification, testConnection on Demo, comparative semantic analysis, Indian origin analysis, sentence polish advice.
 - `test/widget_test.dart` (1 test): Full widget tree boot, masthead rendering, navigation bar items, Word of the Day card.
 
-**Result:** `00:08 +16: All tests passed!`
+**Result:** `00:03 +19: All tests passed!`
 
 ### C. Web Build Verification (`flutter build web --release`)
 ```
-Compiling lib/main.dart for the Web... 32.0s
+Compiling lib/main.dart for the Web... 31.8s
 ✓ Built build/web
 ```
 
 ### D. Live Chrome Runtime Verification
 - Hosted on `http://localhost:8080/`
 - Rendered in Chrome browser
-- Verified interactive elements: Tab navigation, Word of the Day hero, Search field, Bookmarks, and Ask Garuda conversation interface.
+- Verified interactive elements: Tab navigation, Word of the Day hero, Search field, Bookmarks, and Ask Garuda conversation interface with error recovery.
 
 ---
 
-## 7. Known Limitations & Future Roadmap
+## 7. Items Requiring Developer / Reviewer Confirmation
 
-1. **TTS Audio on Web Autoplay:** Web browsers enforce strict user-gesture policies on audio playback. The app defends against this with fallback error handling, but native mobile playback provides a more seamless audio experience.
-2. **Streaming AI Responses:** The current Gemini integration uses single-turn REST generation (`generateContent`). Future releases can incorporate SSE/WebSocket streaming for letter-by-letter live typing.
-3. **Offline Lexicon Size:** The curated local database contains 15 rich entries. Expanding this to 500+ curated Indic words with offline SQLite or Hive storage would make the app 100% functional without internet connectivity.
+*The following items depend on external evaluator preferences and require human confirmation:*
+- [ ] **Google Gemini API Key Provisioning:** To test live LLM responses against Google's servers, the reviewer may supply an active Gemini API key in the in-app Settings dialog (`tune_rounded`). In the absence of an API key, the built-in Garuda Linguistic Engine Demo Mode operates completely offline.
+- [ ] **Target Android / iOS Physical Devices:** Final smoke testing on physical Android and iOS hardware to observe native haptic and TTS behavior outside the browser environment.

@@ -1,17 +1,33 @@
+import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 
-class AudioService {
+class AudioService extends ChangeNotifier {
   AudioPlayer? _player;
   bool _isPlaying = false;
   String? _currentlyPlayingUrl;
+  StreamSubscription? _completeSubscription;
 
   bool get isPlaying => _isPlaying;
   String? get currentlyPlayingUrl => _currentlyPlayingUrl;
 
   AudioPlayer get player {
-    _player ??= AudioPlayer();
+    if (_player == null) {
+      _player = AudioPlayer();
+      _completeSubscription = _player!.onPlayerComplete.listen((_) {
+        _isPlaying = false;
+        _currentlyPlayingUrl = null;
+        notifyListeners();
+      });
+    }
     return _player!;
+  }
+
+  bool isUrlPlaying(String? url) {
+    if (url == null || !_isPlaying || _currentlyPlayingUrl == null) return false;
+    var clean = url.trim();
+    if (clean.startsWith('//')) clean = 'https:$clean';
+    return _currentlyPlayingUrl == clean;
   }
 
   Future<void> playPronunciation(
@@ -25,7 +41,6 @@ class AudioService {
         await stop();
       }
 
-      // Format URL if protocol is relative (e.g. "//ssl.gstatic.com/...")
       var url = audioUrl.trim();
       if (url.startsWith('//')) {
         url = 'https:$url';
@@ -33,19 +48,15 @@ class AudioService {
 
       _isPlaying = true;
       _currentlyPlayingUrl = url;
+      notifyListeners();
       onStart?.call();
-
-      player.onPlayerComplete.listen((_) {
-        _isPlaying = false;
-        _currentlyPlayingUrl = null;
-        onComplete?.call();
-      });
 
       await player.play(UrlSource(url));
     } catch (e) {
       _isPlaying = false;
       _currentlyPlayingUrl = null;
-      onError?.call('Could not play audio: ${e.toString()}');
+      notifyListeners();
+      onError?.call('Audio playback unavailable on this device: ${e.toString()}');
     }
   }
 
@@ -55,10 +66,14 @@ class AudioService {
     } catch (_) {}
     _isPlaying = false;
     _currentlyPlayingUrl = null;
+    notifyListeners();
   }
 
+  @override
   void dispose() {
+    _completeSubscription?.cancel();
     _player?.dispose();
     _player = null;
+    super.dispose();
   }
 }

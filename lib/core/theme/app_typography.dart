@@ -6,7 +6,6 @@ import 'app_colors.dart';
 /// Uses a classic literary serif for hero words and editorial titles,
 /// with an elegant sans-serif for functional reading, navigation, and controls.
 class AppTypography {
-  // Serif family for words, titles, and literary excerpts
   static TextStyle serifHeading({
     double fontSize = 28,
     FontWeight fontWeight = FontWeight.w600,
@@ -59,7 +58,6 @@ class AppTypography {
     }
   }
 
-  // Sans-serif family for body text, metadata, labels, and buttons
   static TextStyle sansBody({
     double fontSize = 15,
     FontWeight fontWeight = FontWeight.w400,

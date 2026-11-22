@@ -3,6 +3,22 @@ import 'package:http/http.dart' as http;
 import '../data/curated_words.dart';
 import '../models/word_model.dart';
 
+class WordNotFoundException implements Exception {
+  final String word;
+  const WordNotFoundException(this.word);
+
+  @override
+  String toString() => 'No formal definition found for "$word". Please check your spelling or ask Ask Garuda.';
+}
+
+class DictionaryApiException implements Exception {
+  final String message;
+  const DictionaryApiException(this.message);
+
+  @override
+  String toString() => message;
+}
+
 class DictionaryService {
   final http.Client _client;
 
@@ -12,7 +28,6 @@ class DictionaryService {
   /// Stable for the entire calendar day without randomly changing on reopen.
   WordEntry getWordOfTheDay() {
     final now = DateTime.now();
-    // Deterministic index from year and day of year
     final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
     final index = (now.year + dayOfYear) % curatedWordEntries.length;
     return curatedWordEntries[index];
@@ -23,7 +38,7 @@ class DictionaryService {
   Future<WordEntry> lookupWord(String word) async {
     final clean = word.trim().toLowerCase();
     if (clean.isEmpty) {
-      throw Exception('Please enter a word to search.');
+      throw const DictionaryApiException('Please enter a word to search.');
     }
 
     // 1. Check curated collection first (instant, enriched with verified Indian roots)
@@ -55,20 +70,26 @@ class DictionaryService {
           return entry;
         }
       } else if (response.statusCode == 404) {
-        throw Exception('Word not found in the dictionary.');
+        throw WordNotFoundException(clean);
       } else {
-        throw Exception('Dictionary service responded with code ${response.statusCode}.');
+        throw DictionaryApiException('Dictionary service responded with status ${response.statusCode}.');
       }
+    } on WordNotFoundException {
+      rethrow;
     } catch (e) {
-      // If network fails, re-check if we have any near curated match
-      final nearMatch = curatedWordEntries.firstWhere(
-        (e) => e.word.toLowerCase() == clean,
-        orElse: () => throw Exception('Unable to locate "$word". Please check your spelling or network connection.'),
-      );
-      return nearMatch;
+      if (e is WordNotFoundException) rethrow;
+
+      // In case of network timeout or connectivity loss, check if we have any near curated match
+      for (final item in curatedWordEntries) {
+        if (item.word.toLowerCase() == clean) {
+          return item;
+        }
+      }
+
+      throw DictionaryApiException('Network connection interrupted while looking up "$word". Please check your connection.');
     }
 
-    throw Exception('Unable to locate "$word".');
+    throw WordNotFoundException(clean);
   }
 
   /// Provides autocomplete suggestions as user types.

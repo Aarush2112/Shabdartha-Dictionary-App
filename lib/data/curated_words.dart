@@ -195,6 +195,114 @@ final List<WordEntry> curatedWordEntries = [
     isCurated: true,
   ),
 
+  const WordEntry(
+    word: 'bandana',
+    phonetic: '/bænˈdæn.ə/',
+    meanings: [
+      WordMeaning(
+        partOfSpeech: 'noun',
+        definitions: [
+          DefinitionItem(
+            definition:
+                'A large triangular or square piece of printed cloth, typically brightly colored and tied around the head or neck.',
+            example: 'He wore a rust-colored bandana to keep the desert dust at bay.',
+            synonyms: ['kerchief', 'scarf', 'headband', 'bandeau'],
+          ),
+        ],
+      ),
+    ],
+    origin: 'Mid-18th century: via Portuguese from Hindi bāndhnā "to tie".',
+    etymology:
+        'Originates from the Hindi verb "bāndhnā" (बाँधना), referring to the ancient tie-dye technique of Rajasthan and Gujarat known as Bandhani. Adopted into maritime global trade as colorful spotted neckerchiefs.',
+    indianConnections: [
+      IndianLanguageConnection(
+        language: 'Hindi / Gujarati',
+        nativeScript: 'बाँधना / બંધણી',
+        transliteration: 'bāndhnā / bāndhaṇī',
+        meaning: 'To tie, bind; the traditional resist tie-dye textile process.',
+        relationType: IndianRelationType.loanword,
+        academicNote:
+            'Direct loanword from the Indian textile trade. Bandhani fabrics date back to the Indus Valley Civilization and Ajanta wall murals.',
+        isVerified: true,
+      ),
+    ],
+    editorialInsight:
+        'A global fashion staple born from the ancient tie-dye vats of western India.',
+    isCurated: true,
+  ),
+
+  const WordEntry(
+    word: 'cheetah',
+    phonetic: '/ˈtʃiː.tə/',
+    meanings: [
+      WordMeaning(
+        partOfSpeech: 'noun',
+        definitions: [
+          DefinitionItem(
+            definition:
+                'A large, slender feline of Africa and formerly India, noted as the fastest terrestrial mammal.',
+            example: 'The cheetah sprinted across the savanna with breathtaking velocity.',
+            synonyms: ['hunting leopard'],
+          ),
+        ],
+      ),
+    ],
+    origin: 'Late 18th century: from Hindi cītā, from Sanskrit citraka "spotted one".',
+    etymology:
+        'Derived from the Sanskrit "citra" (चित्र: variegated, spotted, manifold) + suffix "-ka". In ancient India, cheetahs were tamed by royal houses for coursing antelope.',
+    indianConnections: [
+      IndianLanguageConnection(
+        language: 'Sanskrit / Hindi',
+        nativeScript: 'चित्रक / चीता',
+        transliteration: 'citraka / cītā',
+        meaning: 'The spotted or variegated one.',
+        relationType: IndianRelationType.loanword,
+        academicNote:
+            'Direct loanword through Hindi. Mentions of hunting cheetahs appear in classical Sanskrit poetics and medieval Mughal chronicles.',
+        isVerified: true,
+      ),
+    ],
+    editorialInsight:
+        'From Sanskrit poetics of color and pattern ("citra") to the fastest creature on earth.',
+    isCurated: true,
+  ),
+
+  const WordEntry(
+    word: 'dental',
+    phonetic: '/ˈdɛn.təl/',
+    meanings: [
+      WordMeaning(
+        partOfSpeech: 'adjective',
+        definitions: [
+          DefinitionItem(
+            definition:
+                'Relating to the teeth or dentistry; in phonetics, a consonant articulated with the tongue against the upper teeth.',
+            example: 'Sanskrit and Italian preserve crisp dental consonants.',
+            synonyms: ['odontic'],
+          ),
+        ],
+      ),
+    ],
+    origin: 'Late 16th century: from Medieval Latin dentalis, from dens ("tooth").',
+    etymology:
+        'Inherited from Proto-Indo-European *h₁dónts (tooth). Directly shares prehistoric ancestor with Sanskrit "danta" (दन्त), Greek "odont-", and Germanic "tooth".',
+    indianConnections: [
+      IndianLanguageConnection(
+        language: 'Sanskrit',
+        nativeScript: 'दन्त',
+        transliteration: 'danta',
+        meaning: 'Tooth; also refers to the dental varga (ta, tha, da, dha, na) in Sanskrit phonology.',
+        relationType: IndianRelationType.cognate,
+        academicNote:
+            'A pristine PIE cognate (*h₁dónts). English "tooth" and Latin "dens/dental" share common genetic ancestry with Sanskrit "danta".',
+        isVerified: true,
+      ),
+    ],
+    editorialInsight:
+        'A profound phonetic cognate uniting anatomical terms across Indo-European languages.',
+    isCurated: true,
+  ),
+
   // --- PROTO-INDO-EUROPEAN (PIE) COGNATES ---
   const WordEntry(
     word: 'brother',

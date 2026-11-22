@@ -12,6 +12,9 @@ abstract class AiService {
     required String prompt,
     required List<ChatMessage> conversationHistory,
   });
+
+  /// Test connection to the AI provider.
+  Future<String> testConnection();
 }
 
 /// System instructions that give Ask Garuda its distinct editorial and scholarly voice.
@@ -139,6 +142,55 @@ class GoogleGeminiAiService implements AiService {
       throw Exception('Ask Garuda connection error: ${e.toString()}');
     }
   }
+
+  @override
+  Future<String> testConnection() async {
+    final cleanKey = apiKey.trim();
+    if (cleanKey.isEmpty) {
+      throw Exception('API key cannot be blank.');
+    }
+
+    final endpoint = Uri.parse(
+      'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$cleanKey',
+    );
+
+    try {
+      final response = await _client
+          .post(
+            endpoint,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'contents': [
+                {
+                  'role': 'user',
+                  'parts': [
+                    {'text': 'Ping'}
+                  ]
+                }
+              ],
+              'generationConfig': {
+                'maxOutputTokens': 5,
+              },
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return 'Connection verified! Google Gemini ($model) is active and responding.';
+      } else {
+        try {
+          final Map<String, dynamic> body = jsonDecode(response.body) as Map<String, dynamic>;
+          final error = body['error']?['message'] ?? response.body;
+          throw Exception('API Error (${response.statusCode}): $error');
+        } catch (_) {
+          throw Exception('API Error (${response.statusCode}): ${response.body}');
+        }
+      }
+    } catch (e) {
+      if (e.toString().contains('API Error')) rethrow;
+      throw Exception('Connection test failed: ${e.toString().replaceAll("Exception: ", "")}');
+    }
+  }
 }
 
 /// Built-in Linguistic Engine for Garuda Lexicon.
@@ -150,6 +202,12 @@ class GarudaDemoAiService implements AiService {
 
   @override
   String get providerName => 'Garuda Linguistic Engine (Demo Mode)';
+
+  @override
+  Future<String> testConnection() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return 'Garuda Built-in Linguistic Engine (Demo Mode) is fully operational and requires no external API key.';
+  }
 
   @override
   Future<ChatMessage> sendMessage({

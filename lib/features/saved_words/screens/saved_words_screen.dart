@@ -14,6 +14,7 @@ class SavedWordsScreen extends StatefulWidget {
   final DictionaryService dictionaryService;
   final AudioService audioService;
   final Function(String prompt)? onAskAi;
+  final Function(int tabIndex)? onNavigateToTab;
 
   const SavedWordsScreen({
     super.key,
@@ -21,6 +22,7 @@ class SavedWordsScreen extends StatefulWidget {
     required this.dictionaryService,
     required this.audioService,
     this.onAskAi,
+    this.onNavigateToTab,
   });
 
   @override
@@ -136,11 +138,17 @@ class _SavedWordsScreenState extends State<SavedWordsScreen> {
         ],
       ),
       body: _savedWords.isEmpty
-          ? const EmptyStateView(
+          ? EmptyStateView(
               icon: Icons.bookmark_border_rounded,
               title: 'Your Vocabulary Notebook is Empty',
               message:
                   'As you read and explore words, tap the bookmark icon on any word to keep it in your permanent study collection.',
+              buttonText: 'Discover Curated Collections',
+              onButtonPressed: () {
+                if (widget.onNavigateToTab != null) {
+                  widget.onNavigateToTab!(1); // Navigate to Explore
+                }
+              },
             )
           : Column(
               children: [

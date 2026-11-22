@@ -139,10 +139,18 @@ Discovered on Garuda Lexicon — The Dictionary & Language Companion.
   }
 
   void _triggerAskAi() {
-    if (_entry == null) return;
-    final prompt = 'Explain the historical roots and nuanced usage of "${_entry!.word}".';
+    final queryWord = _entry?.word ?? widget.wordQuery ?? '';
+    if (queryWord.isEmpty) return;
+    final prompt = 'Explain the historical roots and nuanced usage of "$queryWord".';
     if (widget.onAskAi != null) {
-      Navigator.of(context).pop();
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      widget.onAskAi!(prompt);
+    }
+  }
+
+  void _triggerAskAiWithCustomPrompt(String prompt) {
+    if (widget.onAskAi != null) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
       widget.onAskAi!(prompt);
     }
   }
@@ -200,9 +208,16 @@ Discovered on Garuda Lexicon — The Dictionary & Language Companion.
     }
 
     if (_errorMessage != null) {
+      final queryWord = widget.wordQuery ?? _entry?.word ?? 'this word';
       return ErrorStateView(
+        title: _errorMessage!.contains('No formal definition') ? 'Term Not in Dictionary' : 'Lookup Unavailable',
         message: _errorMessage!,
+        retryLabel: 'Retry Search',
         onRetry: () => _fetchWord(widget.wordQuery ?? _entry?.word ?? ''),
+        secondaryActionTitle: widget.onAskAi != null ? 'Ask Garuda about "$queryWord"' : null,
+        onSecondaryAction: widget.onAskAi != null
+            ? () => _triggerAskAiWithCustomPrompt('Can you explain the meaning, origin, or usage of the term "$queryWord"?')
+            : null,
       );
     }
 

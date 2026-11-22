@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../services/ai_service.dart';
 import '../../../services/storage_service.dart';
 
 class AiSettingsDialog extends StatefulWidget {
@@ -21,6 +22,9 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   late TextEditingController _apiKeyController;
   late String _selectedModel;
   bool _obscureKey = true;
+  bool _isTesting = false;
+  String? _testStatusMessage;
+  bool _testSuccess = false;
 
   @override
   void initState() {
@@ -33,6 +37,40 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   void dispose() {
     _apiKeyController.dispose();
     super.dispose();
+  }
+
+  Future<void> _testConnection() async {
+    final key = _apiKeyController.text.trim();
+    setState(() {
+      _isTesting = true;
+      _testStatusMessage = null;
+    });
+
+    try {
+      final AiService service;
+      if (key.isEmpty) {
+        service = GarudaDemoAiService();
+      } else {
+        service = GoogleGeminiAiService(apiKey: key, model: _selectedModel);
+      }
+
+      final result = await service.testConnection();
+      if (mounted) {
+        setState(() {
+          _isTesting = false;
+          _testSuccess = true;
+          _testStatusMessage = result;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isTesting = false;
+          _testSuccess = false;
+          _testStatusMessage = e.toString().replaceAll('Exception: ', '');
+        });
+      }
+    }
   }
 
   Future<void> _save() async {
@@ -77,7 +115,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Garuda Lexicon provides a built-in scholarly linguistic engine (Demo Mode) with authentic curated responses. For live unbounded generation, enter your Google Gemini API key below.',
+              'Garuda Lexicon provides a built-in scholarly linguistic engine (Demo Mode) with authentic responses. For live unbounded generation, enter your Google Gemini API key below.',
               style: AppTypography.sansBody(fontSize: 13, color: AppColors.warmGray, height: 1.4),
             ),
             const SizedBox(height: 16),
@@ -125,6 +163,62 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                 if (val != null) setState(() => _selectedModel = val);
               },
             ),
+            const SizedBox(height: 12),
+            // Test Connection Button & Status View
+            Row(
+              children: [
+                OutlinedButton.icon(
+                  onPressed: _isTesting ? null : _testConnection,
+                  icon: _isTesting
+                      ? const SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(strokeWidth: 1.5),
+                        )
+                      : const Icon(Icons.network_check_rounded, size: 15),
+                  label: Text(_isTesting ? 'Testing...' : 'Test Connection'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.terracotta,
+                    side: const BorderSide(color: AppColors.terracottaBorder),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+              ],
+            ),
+            if (_testStatusMessage != null) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _testSuccess ? AppColors.sageGreenSurface : Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: _testSuccess ? AppColors.sageGreenBorder : Colors.red.shade200,
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      _testSuccess ? Icons.check_circle_rounded : Icons.error_outline_rounded,
+                      size: 15,
+                      color: _testSuccess ? AppColors.sageGreen : Colors.red.shade700,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        _testStatusMessage!,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: _testSuccess ? AppColors.sageGreen : Colors.red.shade800,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(10),

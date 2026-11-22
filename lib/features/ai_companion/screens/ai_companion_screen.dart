@@ -131,6 +131,19 @@ class AiCompanionScreenState extends State<AiCompanionScreen> {
     }
   }
 
+  void _retryLastPrompt() {
+    for (int i = _messages.length - 1; i >= 0; i--) {
+      if (_messages[i].isUser) {
+        final lastUserPrompt = _messages[i].text;
+        setState(() {
+          _messages.removeWhere((m) => m.isError);
+        });
+        _handleSendMessage(lastUserPrompt);
+        return;
+      }
+    }
+  }
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -535,6 +548,38 @@ class AiCompanionScreenState extends State<AiCompanionScreen> {
               ),
             ),
 
+            // Retry action if this is an error message
+            if (msg.isError) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _isGenerating ? null : _retryLastPrompt,
+                    icon: const Icon(Icons.refresh_rounded, size: 14),
+                    label: const Text('Retry Prompt'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.terracotta,
+                      foregroundColor: Colors.white,
+                      visualDensity: VisualDensity.compact,
+                      elevation: 0,
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: _showSettings,
+                    icon: const Icon(Icons.tune_rounded, size: 14),
+                    label: const Text('Configure API Key'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.deepInk,
+                      side: const BorderSide(color: AppColors.border),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
             // Quick Follow-up Chips (if any)
             if (msg.quickFollowUps.isNotEmpty) ...[
               const SizedBox(height: 12),
@@ -603,8 +648,8 @@ class AiCompanionScreenState extends State<AiCompanionScreen> {
           ),
           const SizedBox(width: 8),
           Container(
-            decoration: const BoxDecoration(
-              color: AppColors.terracotta,
+            decoration: BoxDecoration(
+              color: _isGenerating ? AppColors.warmGray.withValues(alpha: 0.4) : AppColors.terracotta,
               shape: BoxShape.circle,
             ),
             child: IconButton(

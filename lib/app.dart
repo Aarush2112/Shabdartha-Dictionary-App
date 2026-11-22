@@ -84,6 +84,7 @@ class _GarudaLexiconAppState extends State<GarudaLexiconApp> {
               dictionaryService: _dictionaryService,
               audioService: _audioService,
               onAskAi: _askAiWithPrompt,
+              onNavigateToTab: _onTabSelected,
             ),
             AiCompanionScreen(
               key: _aiKey,
