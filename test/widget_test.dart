@@ -5,7 +5,7 @@ import 'package:garuda_lexicon/services/storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets('Garuda Lexicon app boots and displays aesthetic exhibition UI and floating capsule dock',
+  testWidgets('SHABDARTHA app boots and displays aesthetic exhibition UI and floating capsule dock',
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1.0;
@@ -23,8 +23,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify Brand title & masthead (Screen 2 exhibition top bar)
-    expect(find.text('Garuda × Rishihood'), findsOneWidget);
-    expect(find.text('Curated Lexicon'), findsOneWidget);
+    expect(find.text('SHABDARTHA'), findsWidgets);
+    expect(find.text('शब्दार्थ • Garuda × Rishihood'), findsOneWidget);
     expect(find.textContaining('Scholar...'), findsOneWidget);
 
     // Verify Circular Category Nodes

@@ -142,7 +142,7 @@ class _WordDetailsScreenState extends State<WordDetailsScreen> {
 ${_entry!.word.toUpperCase()} ${_entry!.phonetic ?? ''}
 [${_entry!.primaryPartOfSpeech}] ${_entry!.primaryDefinition}
 
-Discovered on Garuda Lexicon — The Dictionary & Language Companion.
+Discovered on Shabdartha — The Dictionary & Language Companion.
 ''';
 
     try {

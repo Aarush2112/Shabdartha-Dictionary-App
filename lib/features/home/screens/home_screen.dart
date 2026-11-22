@@ -39,7 +39,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final String _artworkFresco = 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=600';
   final String _artworkFloral = 'https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=600';
   final String _artworkColonnade = 'https://images.unsplash.com/photo-1582561424760-0321d75e81fa?w=800';
-  final String _avatarUrl = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200';
 
   @override
   void initState() {
@@ -216,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Left: Black circular grid button
+        // Left: Black circular grid button (Story Mode)
         InkWell(
           onTap: _openStoryMode,
           borderRadius: BorderRadius.circular(22),
@@ -235,15 +234,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
 
-        // Center: Location / Edition metadata
+        // Center: App Name & Edition
         Column(
           children: [
             Text(
-              'Curated Lexicon',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w400,
-                color: AppColors.warmGray,
+              'SHABDARTHA',
+              style: AppTypography.editorialHeadline(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
+                letterSpacing: 2.0,
               ),
             ),
             const SizedBox(height: 2),
@@ -260,11 +260,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(width: 5),
                 const Text(
-                  'Garuda × Rishihood',
+                  'शब्दार्थ • Garuda × Rishihood',
                   style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF8E8E93),
                   ),
                 ),
               ],
@@ -272,22 +272,21 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
 
-        // Right: Circular portrait avatar
-        Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.border, width: 1.5),
-          ),
-          child: ClipOval(
-            child: Image.network(
-              _avatarUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: const Color(0xFFF2F2F5),
-                child: const Icon(Icons.person_rounded, size: 22, color: Colors.black54),
-              ),
+        // Right: Clean Search Trigger (NO person icon!)
+        InkWell(
+          onTap: _openSearch,
+          borderRadius: BorderRadius.circular(22),
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF2F2F5),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.search_rounded,
+              size: 20,
+              color: Colors.black,
             ),
           ),
         ),

@@ -59,7 +59,7 @@ class _GarudaLexiconAppState extends State<GarudaLexiconApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Garuda Lexicon',
+      title: 'SHABDARTHA',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: Scaffold(
