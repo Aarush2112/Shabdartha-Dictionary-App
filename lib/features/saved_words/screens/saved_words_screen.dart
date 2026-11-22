@@ -192,7 +192,7 @@ class _SavedWordsScreenState extends State<SavedWordsScreen> {
                           message: 'No saved entry matches "$_filterQuery".',
                         )
                       : ListView.separated(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                           itemCount: filtered.length,
                           separatorBuilder: (_, _) => const SizedBox(height: 10),
                           itemBuilder: (context, index) {

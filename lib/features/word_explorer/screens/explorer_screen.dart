@@ -23,31 +23,47 @@ class ExplorerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final gradients = [
+      AppColors.folioTerracotta,
+      AppColors.folioIndigo,
+      AppColors.folioEmerald,
+      AppColors.folioBronze,
+      AppColors.folioTerracotta,
+    ];
+
     return Scaffold(
       backgroundColor: AppColors.parchment,
       appBar: AppBar(
         title: Text(
-          'Word Explorer',
-          style: AppTypography.serifHeading(fontSize: 22),
+          'Linguistic Folios',
+          style: AppTypography.editorialHeadline(fontSize: 22, fontWeight: FontWeight.w700),
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 100.0),
         children: [
           // Intro Editorial Banner
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: AppColors.surfaceSand,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppColors.border),
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.explore_rounded,
-                  size: 28,
-                  color: AppColors.terracotta,
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.obsidian,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.explore_rounded,
+                    size: 22,
+                    color: AppColors.parchment,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -64,9 +80,9 @@ class ExplorerScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        'Discover connections between Sanskrit roots, complex emotions, and the architecture of prose.',
+                        'Discover the deep bridges between Vedic roots, delicate human emotions, and rhetorical precision.',
                         style: AppTypography.sansBody(
-                          fontSize: 13,
+                          fontSize: 12.5,
                           color: AppColors.warmGray,
                           height: 1.35,
                         ),
@@ -78,27 +94,34 @@ class ExplorerScreen extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: Text(
-              'FEATURED COLLECTIONS',
-              style: AppTypography.sansLabel(
-                fontSize: 11,
-                color: AppColors.warmGray,
-                letterSpacing: 0.6,
-              ),
+          const SizedBox(height: 24),
+          Text(
+            'CURATED EXHIBITIONS',
+            style: AppTypography.sansLabel(
+              fontSize: 11,
+              color: AppColors.warmGray,
+              letterSpacing: 1.0,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
 
-          ...curatedCollections.map((collection) {
+          ...curatedCollections.asMap().entries.map((entry) {
+            final index = entry.key;
+            final collection = entry.value;
+            final gradient = gradients[index % gradients.length];
+
             return Container(
-              margin: const EdgeInsets.only(bottom: 12),
+              margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.14),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
               child: InkWell(
                 onTap: () {
@@ -114,9 +137,9 @@ class ExplorerScreen extends StatelessWidget {
                     ),
                   );
                 },
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(22),
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -124,67 +147,82 @@ class ExplorerScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: AppColors.terracottaSurface,
-                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.white.withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
                             ),
                             child: Icon(
                               collection.icon,
                               size: 20,
-                              color: AppColors.terracotta,
+                              color: Colors.white,
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceSand,
-                              borderRadius: BorderRadius.circular(6),
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: Text(
-                              '${collection.wordList.length} words',
-                              style: AppTypography.sansLabel(
+                              '${collection.wordList.length} curated terms',
+                              style: const TextStyle(
                                 fontSize: 11,
-                                color: AppColors.warmGray,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       Text(
-                        collection.title,
-                        style: AppTypography.serifHeading(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                        collection.tag.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.antiqueGoldLight,
+                          letterSpacing: 1.0,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        collection.subtitle,
-                        style: AppTypography.sansBody(
-                          fontSize: 13,
-                          color: AppColors.warmGray,
+                        collection.title,
+                        style: AppTypography.editorialHeadline(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      // Small preview of 3 words
+                      const SizedBox(height: 6),
+                      Text(
+                        collection.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.white.withValues(alpha: 0.75),
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      // Word chips preview
                       Wrap(
                         spacing: 6,
-                        runSpacing: 4,
-                        children: collection.wordList.take(4).map((w) {
+                        runSpacing: 6,
+                        children: collection.wordList.take(5).map((w) {
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceSand.withValues(alpha: 0.7),
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: AppColors.borderSubtle),
+                              color: Colors.black.withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                             ),
                             child: Text(
                               w,
-                              style: AppTypography.sansBody(
+                              style: const TextStyle(
                                 fontSize: 12,
-                                color: AppColors.inkLight,
+                                color: Colors.white,
                               ),
                             ),
                           );

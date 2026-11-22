@@ -611,8 +611,11 @@ class AiCompanionScreenState extends State<AiCompanionScreen> {
   }
 
   Widget _buildInputBar() {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final hasKeyboard = bottomInset > 0;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      padding: EdgeInsets.fromLTRB(16, 8, 16, hasKeyboard ? 12 : 88),
       decoration: const BoxDecoration(
         color: AppColors.parchment,
         border: Border(top: BorderSide(color: AppColors.border)),

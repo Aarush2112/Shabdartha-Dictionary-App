@@ -186,15 +186,16 @@ Discovered on Garuda Lexicon — The Dictionary & Language Companion.
       floatingActionButton: _entry != null && widget.onAskAi != null
           ? FloatingActionButton.extended(
               onPressed: _triggerAskAi,
-              backgroundColor: AppColors.terracotta,
-              foregroundColor: Colors.white,
-              elevation: 2,
-              icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+              backgroundColor: AppColors.obsidian,
+              foregroundColor: AppColors.parchment,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+              elevation: 4,
+              icon: const Icon(Icons.auto_awesome_rounded, size: 18, color: AppColors.terracottaLight),
               label: Text(
                 'Ask Garuda',
                 style: AppTypography.sansLabel(
                   fontSize: 13,
-                  color: Colors.white,
+                  color: AppColors.parchment,
                 ),
               ),
             )

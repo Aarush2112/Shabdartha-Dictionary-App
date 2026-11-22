@@ -23,13 +23,15 @@
 
 ---
 
-## 2. Visual Identity & Editorial Design System
+## 2. Visual Identity & Museum Gallery Design System
 
-- **Warm Parchment Surface:** `#FAF7F2` evokes fine paper and classical book design.
-- **Deep Ink Typography:** `#1A1815` provides high contrast, literary readability.
-- **Muted Terracotta Accent:** `#B84A29` highlights interactions with warm, Indian-inspired elegance.
-- **Sage Green State:** `#2E6347` denotes verified linguistic relations and successful actions.
-- **Typography:** Google Fonts `Cormorant Garamond` (classic serif) for hero words and editorial headings, paired with `Plus Jakarta Sans` for clean, modern legibility.
+The visual language is inspired by high-end classical museum folios and art exhibition catalogues:
+- **Warm Alabaster Canvas:** `#FBF9F4` evokes fine book parchment and gallery walls.
+- **Deep Obsidian Accents:** `#161513` powers the floating capsule navigation dock, circular category nodes, and dark salon cards.
+- **High-Contrast Editorial Typography:** Google Fonts `Playfair Display` and `Cormorant Garamond` (high-fashion editorial serifs) paired with `Plus Jakarta Sans`.
+- **Illuminated Masterpiece Framing:** Word of the Day styled with classical cathedral arch framing and Devanagari script callouts.
+- **Floating Island Capsule Dock:** Centered minimalist black pill (`BorderRadius.circular(34)`) floating gracefully above content with ambient elevation shadows.
+- **Curated Atmospheric Gradients:** Rich terracotta, midnight indigo, emerald, and bronze folios for thematic word exploration.
 
 ---
 

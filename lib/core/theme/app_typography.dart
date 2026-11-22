@@ -2,16 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-/// Literary & Editorial Typography system for Garuda Lexicon.
-/// Uses a classic literary serif for hero words and editorial titles,
-/// with an elegant sans-serif for functional reading, navigation, and controls.
+/// Literary & Museum Gallery Typography System.
+/// Inspired by art catalogues, illuminated folios, and classical publishing.
 class AppTypography {
-  static TextStyle serifHeading({
+  static TextStyle editorialHeadline({
     double fontSize = 28,
     FontWeight fontWeight = FontWeight.w600,
     Color color = AppColors.deepInk,
     double letterSpacing = -0.5,
     double height = 1.2,
+  }) {
+    try {
+      return GoogleFonts.playfairDisplay(
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: color,
+        letterSpacing: letterSpacing,
+        height: height,
+      );
+    } catch (_) {
+      return TextStyle(
+        fontFamily: 'Georgia',
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: color,
+        letterSpacing: letterSpacing,
+        height: height,
+      );
+    }
+  }
+
+  static TextStyle serifHeading({
+    double fontSize = 24,
+    FontWeight fontWeight = FontWeight.w600,
+    Color color = AppColors.deepInk,
+    double letterSpacing = -0.4,
+    double height = 1.25,
   }) {
     try {
       return GoogleFonts.cormorantGaramond(
@@ -43,7 +69,7 @@ class AppTypography {
         fontSize: fontSize,
         fontWeight: fontWeight,
         color: color,
-        letterSpacing: -0.5,
+        letterSpacing: -0.6,
         height: 1.1,
       );
     } catch (_) {
@@ -52,14 +78,14 @@ class AppTypography {
         fontSize: fontSize,
         fontWeight: fontWeight,
         color: color,
-        letterSpacing: -0.5,
+        letterSpacing: -0.6,
         height: 1.1,
       );
     }
   }
 
   static TextStyle sansBody({
-    double fontSize = 15,
+    double fontSize = 14.5,
     FontWeight fontWeight = FontWeight.w400,
     Color color = AppColors.deepInk,
     double height = 1.5,
@@ -85,7 +111,7 @@ class AppTypography {
   }
 
   static TextStyle sansLabel({
-    double fontSize = 12,
+    double fontSize = 11.5,
     FontWeight fontWeight = FontWeight.w600,
     Color color = AppColors.warmGray,
     double letterSpacing = 0.5,
@@ -108,7 +134,7 @@ class AppTypography {
   }
 
   static TextStyle phonetic({
-    double fontSize = 16,
+    double fontSize = 15,
     FontWeight fontWeight = FontWeight.w400,
     Color color = AppColors.warmGray,
   }) {

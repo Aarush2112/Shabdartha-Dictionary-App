@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'features/ai_companion/screens/ai_companion_screen.dart';
 import 'features/home/screens/home_screen.dart';
@@ -50,7 +51,6 @@ class _GarudaLexiconAppState extends State<GarudaLexiconApp> {
     setState(() {
       _currentTabIndex = 3; // Switch to Ask Garuda tab
     });
-    // Send prompt through key
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _aiKey.currentState?.sendPromptExternally(prompt);
     });
@@ -63,6 +63,8 @@ class _GarudaLexiconAppState extends State<GarudaLexiconApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: Scaffold(
+        backgroundColor: AppColors.parchment,
+        extendBody: true,
         body: IndexedStack(
           index: _currentTabIndex,
           children: [
@@ -92,10 +94,12 @@ class _GarudaLexiconAppState extends State<GarudaLexiconApp> {
             ),
           ],
         ),
-        bottomNavigationBar: AppBottomNavigation(
-          currentIndex: _currentTabIndex,
-          onTap: _onTabSelected,
-        ),
+        bottomNavigationBar: MediaQuery.of(context).viewInsets.bottom > 0
+            ? null
+            : AppBottomNavigation(
+                currentIndex: _currentTabIndex,
+                onTap: _onTabSelected,
+              ),
       ),
     );
   }
